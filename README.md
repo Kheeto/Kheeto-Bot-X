@@ -3,8 +3,7 @@ Public and open source default Discord Bot using discord.js. You can edit this a
 
 ## How to setup the bot:
 
-#### 1. Create a bot at the Discord Developer Portal.
-https://discord.com/developers/applications
+#### 1. Create a bot at the Discord Developer Portal: https://discord.com/developers/applications.
 
 #### 2. Put your bot token in the .env file.
 
