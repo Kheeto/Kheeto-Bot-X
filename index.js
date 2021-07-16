@@ -29,6 +29,25 @@ const defaultRoleID = "840915147513528321"; // Default server role assigned to u
 // DEBUG OPTIONS
 const enableDebugMode = false; // Only for developer purposes, we don't recommend using this because it disables permission checks in commands and other things!
 
+
+
+
+
+
+// Importing Modules - DO NOT EDIT THIS
+const Discord = require("discord.js");
+const { Client, Collection } = require("discord.js");
+const fs = require("fs");
+const { config } = require("dotenv");
+const chalk = require('chalk');
+
+// Client and Commands - DO NOT EDIT THIS
+const client = new Client({
+    disableEveryone: true
+});
+client.commands = new Collection();
+client.aliases = new Collection();
+
 // EXPORTING CONFIG VALUES TO OTHER FILES - DO NOT EDIT THIS OR SOME COMMANDS WILL NOT WORK!
 module.exports = {
     enableDebugMode: enableDebugMode,
@@ -49,62 +68,50 @@ module.exports = {
     staffCanPunishEachOther: staffCanPunishEachOther,
     showUnpunishInPunishmentChannel: showUnpunishInPunishmentChannel,
     generalCommandStyle: generalCommandStyle,
+    client: client,
 }
 
-// Importing Modules - DO NOT EDIT THIS
-const Discord = require("discord.js");
-const { Client, Collection } = require("discord.js");
-const fs = require("fs");
-const { config } = require("dotenv");
-const chalk = require('chalk');
-
-// Client and Commands - DO NOT EDIT THIS
-const client = new Client({
-    disableEveryone: true
-});
-client.commands = new Collection();
-client.aliases = new Collection();
 config({
     path: __dirname + "/.env"
 });
 if(!disableCommands) {
     ["command"].forEach(handler=>{
-        require(`./handlers/${handler}`)(client);
+        require(`./listeners/${handler}`)(client);
     });
 } else {
-    require(`./handlers/command`);
+    require(`./listeners/command`);
 }
 // Check some config values
 if(generalCommandStyle != "embed" && generalCommandStyle != "default") console.log(chalk.red("[ERROR] Invalid Config Value: \"generalCommandStyle\" string value has to be equal to \"embed\" or \"default\""));
-// Client Events
-client.on("ready", () => {
-    if(!disableCommands) console.log(chalk.green("[INFO] Finished loading Commands!"));
-    console.log(chalk.green("[INFO] Bot Successful connected to Discord."));
-    if(enableDebugMode) {
-        console.log(chalk.yellow("[WARNING] Bot started using Debug Mode and disabling all permission checks!"))
-    }
-    client.user.setActivity('Edit this in index.js', { // You can edit the text in the Bot Status
-        type: 'PLAYING', // You can edit the type of Bot Status - PLAYING, WATCHING, LISTENING, STREAMING
-        // IF TYPE IS STREAMING ADD url: 'put link here' BEFORE THIS COMMENT!
-    });
-})
+// Client Event Handling stuff2
+const eventFiles = fs.readdirSync('./listeners').filter(file => file.endsWith('.js'));
+
+for (const file of eventFiles) {
+	const event = require(`./listeners/${file}`);
+	if (event.once) {
+		client.once(event.name, (...args) => event.run(...args));
+	} else {
+		client.on(event.name, (...args) => event.run(...args));
+	}
+}
 
 // Command Event - DO NOT EDIT THIS IF YOU DON'T KNOW WHAT YOU ARE DOING, OR COMMANDS WILL NOT WORK!
 client.on("message", async message => {
-    if(message.author.bot) return; // Bot will ignore commands from other bots. For example if another bot write /somecommand this bot will ignore it
-    if(message.channel.type === "dm") return message.reply("Use me only in servers!");
-    if(!message.guild) return;
-    if(!message.content.startsWith(prefix)) return; // Check if command is starting with the prefix, defined on the start of this file.
-    if(!message.member) message.member = await message.guild.fetchMember(message);
-    const args = message.content.slice(prefix.length).trim().split(/ +/g); // Command Arguments
-    const cmd = args.shift().toLowerCase();
-    if(cmd.length == 0) return; // If command length is 0
-    var command = client.commands.get(cmd);
-    if(!command) command = client.commands.get(client.aliases.get(cmd)); // If text after prefix is not a valid command check if it's an alias
-    if(command) {
-        command.run(client,message,args); // Run the command
+        if(message.author.bot) return; // Bot will ignore commands from other bots. For example if another bot write /somecommand this bot will ignore it
+        if(message.channel.type === "dm") return message.reply("Use me only in servers!");
+        if(!message.guild) return;
+        if(!message.content.startsWith(prefix)) return; // Check if command is starting with the prefix, defined on the start of this file.
+        if(!message.member) message.member = await message.guild.fetchMember(message);
+        const args = message.content.slice(prefix.length).trim().split(/ +/g); // Command Arguments
+        const cmd = args.shift().toLowerCase();
+        if(cmd.length == 0) return; // If command length is 0
+        var command = client.commands.get(cmd);
+        if(!command) command = client.commands.get(client.aliases.get(cmd)); // If text after prefix is not a valid command check if it's an alias
+        if(command) {
+            command.run(client,message,args); // Run the command
+        }
     }
-})
+);
 
 // Client Login - Connect the Bot to Discord - THIS TAKES THE TOKEN FROM .ENV FILE
 client.login(process.env.TOKEN)
