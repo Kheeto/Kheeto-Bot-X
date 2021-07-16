@@ -30,7 +30,9 @@ module.exports = {
             return;
         }
 
-        if (text.length) {
+        const ascii = await figletAsync(text);
+        
+        if (ascii.length > 1999) {
             if(configValues.generalCommandStyle == "embed") {
                 message.reply(tooLongEmbed);
             } else if(configValues.generalCommandStyle == "default") {
@@ -39,7 +41,6 @@ module.exports = {
             return;
         }
 
-        const ascii = await figletAsync(text);
         message.channel.send("```" +ascii+ "```");
 
     }
