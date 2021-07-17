@@ -1,6 +1,9 @@
 # Kheeto-Bot-X
 Public and open source default Discord Bot using discord.js. You can edit this as you want.
 
+# Discord Support Server
+https://discord.gg/UyajJEwEjC
+
 ## How to setup the bot:
 
 1. Create a bot at the Discord Developer Portal: https://discord.com/developers/applications.
