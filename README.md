@@ -1,4 +1,6 @@
 # Kheeto-Bot-X
+Under MIT LICENSE
+
 Public and open source default Discord Bot using discord.js. You can edit this as you want.
 
 # Discord Support Server
